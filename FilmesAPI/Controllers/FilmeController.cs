@@ -10,29 +10,35 @@ namespace FilmesAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class FilmeController
+    public class FilmeController : ControllerBase
     {
-        private static List<Filme> Filmes = new();
+        private static List<Filme> filmes = new();
         private static int id = 0;
 
         [HttpPost]
-        public void AdicionaFilme([FromBody]Filme filme)
+        public IActionResult AdicionaFilme([FromBody]Filme filme)
         {
             filme.Id = ++id;
-            Filmes.Add(filme);
+            filmes.Add(filme);
             Console.WriteLine($"Filme {filme.Titulo}");
+            return (CreatedAtAction(nameof(BuscaFilmesPorId), new { Id = filme.Id }, filme));   //retorna o filme na hora da criação
         }
         
         [HttpGet]
-        public IEnumerable<Filme> VerFilmes()
+        public IActionResult BuscaTodosFilmes()
         {
-            return Filmes;
+            return Ok(filmes);
         }
 
-        [HttpGet("/{id}")]
-        public Filme VerFilme(int id)
+        [HttpGet("{id}")]
+        public IActionResult BuscaFilmesPorId(int id)
         {
-            return Filmes.Where(f => f.Id == id).FirstOrDefault();
+            Filme filme =  filmes.FirstOrDefault(f => f.Id == id);
+            if (filme != null)
+            {
+                return Ok(filme);
+            }
+            return NotFound("Id Não encontrado");
         }
     }
 }
