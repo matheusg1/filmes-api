@@ -7,6 +7,7 @@ using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 using System.Linq;
 using FilmesAPI.Data;
 using FilmesAPI.Data.DTOs;
+using AutoMapper;
 
 namespace FilmesAPI.Controllers
 {
@@ -15,21 +16,18 @@ namespace FilmesAPI.Controllers
     public class FilmeController : ControllerBase
     {
         private FilmeContext _context;
+        private IMapper _mapper;
 
-        public FilmeController(FilmeContext context)
+        public FilmeController(FilmeContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         [HttpPost]
         public IActionResult AdicionaFilme([FromBody] CreateFilmeDto filmeDto)
         {
-            Filme filme = new Filme { 
-                Titulo = filmeDto.Titulo,
-                Genero = filmeDto.Genero,
-                Duracao = filmeDto.Duracao,
-                Diretor = filmeDto.Diretor,
-            };
+            Filme filme = _mapper.Map<Filme>(filmeDto);
             _context.Add(filme);
             _context.SaveChanges();
             return (CreatedAtAction(nameof(BuscaFilmesPorId), new { Id = filme.Id }, filme));   //retorna o filme na hora da criação
@@ -48,15 +46,7 @@ namespace FilmesAPI.Controllers
             Filme filme = _context.Filmes.FirstOrDefault(f => f.Id.Equals(id));
             if (filme != null)
             {
-                ReadFilmeDto filmeDto = new ReadFilmeDto
-                {
-                    Id = filme.Id,
-                    Titulo = filme.Titulo,
-                    Diretor = filme.Diretor,
-                    Genero = filme.Genero,
-                    Duracao = filme.Duracao,
-                    HoraDaConsulta = DateTime.Now
-                };
+                ReadFilmeDto filmeDto = _mapper.Map<ReadFilmeDto>(filme); 
                 return Ok(filmeDto);
             }
             return NotFound("Id não encontrado");
@@ -70,10 +60,8 @@ namespace FilmesAPI.Controllers
             {
                 return NotFound("Id não encontrado");
             }
-            filme.Titulo = FilmeDto.Titulo;
-            filme.Genero = FilmeDto.Genero;
-            filme.Duracao = FilmeDto.Duracao;
-            filme.Diretor = FilmeDto.Diretor;
+
+            _mapper.Map(FilmeDto, filme);
             _context.Update(filme);
             _context.SaveChanges();
 
