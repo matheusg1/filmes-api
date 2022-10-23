@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 using System.Linq;
 using FilmesAPI.Data;
+using FilmesAPI.Data.DTOs;
 
 namespace FilmesAPI.Controllers
 {
@@ -21,8 +22,14 @@ namespace FilmesAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult AdicionaFilme([FromBody] Filme filme)
+        public IActionResult AdicionaFilme([FromBody] CreateFilmeDto filmeDto)
         {
+            Filme filme = new Filme { 
+                Titulo = filmeDto.Titulo,
+                Genero = filmeDto.Genero,
+                Duracao = filmeDto.Duracao,
+                Diretor = filmeDto.Diretor,
+            };
             _context.Add(filme);
             _context.SaveChanges();
             return (CreatedAtAction(nameof(BuscaFilmesPorId), new { Id = filme.Id }, filme));   //retorna o filme na hora da criação
@@ -37,26 +44,36 @@ namespace FilmesAPI.Controllers
         [HttpGet("{id}")]
         public IActionResult BuscaFilmesPorId(int id)
         {
+           
             Filme filme = _context.Filmes.FirstOrDefault(f => f.Id.Equals(id));
             if (filme != null)
             {
-                return Ok(filme);
+                ReadFilmeDto filmeDto = new ReadFilmeDto
+                {
+                    Id = filme.Id,
+                    Titulo = filme.Titulo,
+                    Diretor = filme.Diretor,
+                    Genero = filme.Genero,
+                    Duracao = filme.Duracao,
+                    HoraDaConsulta = DateTime.Now
+                };
+                return Ok(filmeDto);
             }
             return NotFound("Id não encontrado");
         }
 
         [HttpPut("{id}")]
-        public IActionResult AtualizaFilme(int id, [FromBody] Filme filmeNovo)
+        public IActionResult AtualizaFilme(int id, [FromBody] UpdateFilmeDto FilmeDto)
         {
             Filme filme = _context.Filmes.FirstOrDefault(f => f.Id.Equals(id));
             if (filme == null)
             {
                 return NotFound("Id não encontrado");
             }
-            filme.Titulo = filmeNovo.Titulo;
-            filme.Genero = filmeNovo.Genero;
-            filme.Duracao = filmeNovo.Duracao;
-            filme.Diretor = filmeNovo.Diretor;
+            filme.Titulo = FilmeDto.Titulo;
+            filme.Genero = FilmeDto.Genero;
+            filme.Duracao = FilmeDto.Duracao;
+            filme.Diretor = FilmeDto.Diretor;
             _context.Update(filme);
             _context.SaveChanges();
 
@@ -66,7 +83,7 @@ namespace FilmesAPI.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeletaFilme(int id)
         {
-            Filme filme = _context.Filmes.FirstOrDefault(f => f.Id == id);
+            Filme filme = _context.Filmes.FirstOrDefault(f => f.Id.Equals(id));
             if (filme == null)
             {
                 return NotFound("Id não encontrado");
