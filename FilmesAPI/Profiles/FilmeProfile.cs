@@ -8,9 +8,9 @@ namespace FilmesAPI.Profiles
     {
         public FilmeProfile()
         {
-            CreateMap<CreateFilmeDto, Filme>();
-            CreateMap<Filme, ReadFilmeDto>();
-            CreateMap<UpdateFilmeDto, Filme>();
+            CreateMap<CreateFilmeDto, Filme>(); //Ao criar o objeto, o Id não é passado
+            CreateMap<Filme, ReadFilmeDto>();   //Na leitura do filme, o Id não é mostrado
+            CreateMap<UpdateFilmeDto, Filme>(); //Na alteração o Id também não é passado
         }
     }
 }
